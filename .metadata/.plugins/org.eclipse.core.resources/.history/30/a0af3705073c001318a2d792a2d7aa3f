@@ -1,0 +1,69 @@
+package main;
+
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JToolBar;
+import java.awt.BorderLayout;
+import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+public class UserInterface_Main {
+
+	private JFrame frame;
+	private Database db;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					UserInterface_Main window = new UserInterface_Main(null);
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the application.
+	 */
+	public UserInterface_Main(Database dataBase) {
+		initialize();
+		db = dataBase;
+	}
+
+	/**
+	 * Initialise the contents of the frame.
+	 */
+	private void initialize() {
+		frame = new JFrame();
+		frame.setBounds(100, 100, 589, 405);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		JToolBar toolBar = new JToolBar();
+		frame.getContentPane().add(toolBar, BorderLayout.NORTH);
+		
+		JButton btnAddNewStudent = new JButton("Add New Student");
+		btnAddNewStudent.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				UserInterface_AddStudent ui_addStudent = new UserInterface_AddStudent(db);
+				ui_addStudent.main(null);
+			}
+		});
+		btnAddNewStudent.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			}
+		});
+		toolBar.add(btnAddNewStudent);
+	}
+
+}

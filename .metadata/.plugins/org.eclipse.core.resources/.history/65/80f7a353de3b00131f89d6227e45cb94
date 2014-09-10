@@ -1,0 +1,675 @@
+package main;
+
+import java.sql.*;
+
+public class Database {
+
+	private Connection dbConn = null;
+
+	public Database() {
+		connectToDatabase();
+	}
+
+	/**
+	 * Establish a connection to the database.
+	 */
+	public void connectToDatabase() {
+
+		System.out.println();
+		String dbName = "jdbc:postgresql://dbteach2.cs.bham.ac.uk/mattie432";
+
+		try {
+			Class.forName("org.postgresql.Driver");
+		} catch (ClassNotFoundException ex) {
+			System.out.println("Driver not found");
+		}
+
+		System.out.println("PostgreSQL driver registered.");
+		try {
+			dbConn = DriverManager.getConnection(dbName, "mxf203", "password");
+			System.out.println("Database accessed!");
+			dbConn.setAutoCommit(false);
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		}
+
+		if (dbConn != null) {
+		} else {
+			System.out.println("Failed to make connection");
+		}
+
+	}
+
+	/**
+	 * Close the connection to the database.
+	 */
+	public void disconnectFromDatabase() {
+		System.out.println();
+		try {
+			dbConn.close();
+			System.out.println("Database connection closed");
+		} catch (SQLException e) {
+			System.out.println("Error closing database \n");
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * Creates all of the tables in the database for testing purposes.
+	 */
+	public void createTables() {
+		int numSqlQueries = 9;
+		String[] sql = new String[numSqlQueries];
+		PreparedStatement stmt = null;
+		String[] tableNames = new String[9];
+		System.out.println();
+
+		tableNames[0] = "Title";
+		tableNames[1] = "Student";
+		tableNames[2] = "Session";
+		tableNames[3] = "Type";
+		tableNames[4] = "NextOfKin";
+		tableNames[5] = "Lecturer";
+		tableNames[6] = "Course";
+		tableNames[7] = "Marks";
+		tableNames[8] = "StudentContact";
+
+		// constraints, length checks on strings
+		sql[0] = "CREATE TABLE Titles (" + 
+					"titleID SERIAL, "	+ 
+					"titleString varchar(500)," + 
+					"PRIMARY KEY (titleID)" + 
+				");";
+
+		sql[1] = "CREATE TABLE Student (" + 
+					"studentID SERIAL, " + 
+					"titleID int," + 
+					"forname varchar(100)," + 
+					"familyName varchar(100), " + 
+					"dateOfBirth DATE," + 
+					"sex varchar(1)," + 
+					"PRIMARY KEY (studentID)," + 
+					"FOREIGN KEY (titleID) REFERENCES Titles(titleID)" + 
+				");";
+
+		sql[2] = "CREATE TABLE Session (" + 
+					"sessionID SERIAL, " + 
+					"sessionString varchar(500)," + 
+					"PRIMARY KEY (sessionID)" + 
+				");";
+
+		sql[3] = "CREATE TABLE Type (" + 
+					"typeID SERIAL, " + 
+					"typeString varchar(500)," + 
+					"PRIMARY KEY (typeID)" + 
+				");";
+
+		sql[4] = "CREATE TABLE NextOfKin (" + 
+					"studentID int, " + 
+					"eMailAddress varchar(500)," + 
+					"postalAddress varchar(500), " + 
+					"FOREIGN KEY (studentID) REFERENCES Student(studentID)"
+				+ ");";
+
+		sql[5] = "CREATE TABLE Lecturer (" + 
+					"lecturerID SERIAL, " + 
+					"titleID int," + 
+					"forname varchar(100)," + 
+					"familyName varchar(100), " + 
+					"PRIMARY KEY (LecturerID)," + 
+					"FOREIGN KEY (titleID) REFERENCES Titles(titleID)" + 
+				");";
+
+		sql[6] = "CREATE TABLE Course (" + 
+					"courseID SERIAL, " + 
+					"courseName varchar(500)," + 
+					"courseDescription varchar(500), " + "lecturerID int," + 
+					"PRIMARY KEY (courseID)," + 
+					"FOREIGN KEY (lecturerID) REFERENCES Lecturer(lecturerID)" + 
+				");";
+
+		sql[7] = "CREATE TABLE Marks (" + 
+					"studentID int, " + 
+					"courseID int," + 
+					"year varchar(100)," + 
+					"sessionID int, " + 
+					"typeID int," + 
+					"mark int," + 
+					"notes varchar(500)," + 
+					"FOREIGN KEY (studentID) REFERENCES Student(studentID)," + 
+					"FOREIGN KEY (courseID) REFERENCES Course(courseID)," + 
+					"FOREIGN KEY (sessionID) REFERENCES Session(sessionID)," + 
+					"FOREIGN KEY (typeID) REFERENCES Type(typeID)" + 
+				");";
+
+		sql[8] = "CREATE TABLE StudentContact (" + 
+					"studentID int, " + 
+					"eMailAddress varchar(100)," + 
+					"postalAddress varchar(100), " + 
+					"FOREIGN KEY (studentID) REFERENCES Student(studentID)" + 
+				");";
+
+		for (int i = 0; i < numSqlQueries; i++) {
+			try {
+
+				stmt = dbConn.prepareStatement(sql[i]);
+				stmt.executeUpdate();
+				dbConn.commit();
+				System.out.println("Table created: " + tableNames[i]);
+
+			} catch (SQLException e) {
+				System.out.println("Error creating a new table");
+				e.printStackTrace();
+
+				// try rollback
+				if (dbConn != null) {
+					try {
+						dbConn.rollback();
+						System.out.println("Rollback sucsessfull");
+					} catch (Exception ex) {
+						System.out.println("Could not rollback changes");
+					}
+				}
+
+			} finally {
+
+				// close connection
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					System.out
+							.println("Error closing the statement connection");
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * Removes all of the tables from the database.
+	 */
+	public void removeTables() {
+		int numTableNames = 9;
+		String[] tableNames = new String[numTableNames];
+		PreparedStatement stmt = null;
+		System.out.println();
+
+		tableNames[0] = "Titles";
+		tableNames[1] = "Student";
+		tableNames[2] = "Session";
+		tableNames[3] = "Type";
+		tableNames[4] = "NextOfKin";
+		tableNames[5] = "Lecturer";
+		tableNames[6] = "Course";
+		tableNames[7] = "Marks";
+		tableNames[8] = "StudentContact";
+
+		for (int i = numTableNames - 1; i >= 0; i--) {
+			try {
+
+				String sql = "DROP TABLE " + tableNames[i] + ";";
+				stmt = dbConn.prepareStatement(sql);
+				stmt.executeUpdate();
+				dbConn.commit();
+				System.out.println("Table dropped: " + tableNames[i]);
+
+			} catch (SQLException e) {
+				System.out.println("Error dropping a table");
+				e.printStackTrace();
+
+				// try rollback
+				if (dbConn != null) {
+					try {
+						dbConn.rollback();
+						System.out.println("Rollback sucsessfull");
+					} catch (Exception ex) {
+						System.out.println("Could not rollback changes");
+					}
+				}
+
+			} finally {
+
+				// close connection
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					System.out
+							.println("Error closing the statement connection");
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public void addTestData() {
+		int numStudents = 100;
+		int numTitles = 5;
+		int numType = 3;
+		int numNextOfKin = 50;
+		int numLecturer = 15;
+		int numCourse = 100;
+		
+		System.out.println();
+		
+		addTestData_Title(numTitles);
+		addTestData_Student(numStudents, numTitles);
+		addTestData_Session();
+		addTestData_Type(numType);
+		addTestData_NextOfKin(numStudents, numNextOfKin);
+		addTestData_Lecturer(numLecturer, numTitles);
+		addTestData_Course(numCourse, numLecturer);
+		//addTestData_Marks();
+		addTestData_StudentContact(numStudents);
+		
+		System.out.println();
+	}
+
+
+
+	private void addTestData_Title(int numTitles) {
+
+		String[] titles = new String[numTitles];
+		titles[0] = "Mr";
+		titles[1] = "Mrs";
+		titles[2] = "Miss";
+		titles[3] = "Dr";
+		titles[4] = "Ms";
+
+		PreparedStatement stmt = null;
+
+		try {
+			for (int i = 0; i < numTitles; i++) {
+				try {
+					String sql = "INSERT INTO Titles(titleID, titleString) VALUES('" + 
+							(i+1) +
+							titles[i] + "');";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+
+					dbConn.commit();
+
+				} catch (SQLException e) {
+					System.out.println("Error inserting :" + titles[i]);
+					e.printStackTrace();
+					try {
+						dbConn.rollback();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+			
+			System.out.println("Test data inserted: Titles");
+
+		} finally {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				System.out
+						.println("Could not close PreparedStatement connection");
+				e.printStackTrace();
+			}
+		}
+
+	}
+	private void addTestData_Student(int numStudents, int numTitles) {
+
+		PreparedStatement stmt = null;
+
+		try {
+			for (int i = 0; i < numStudents; i++) {
+				try {
+					String sql = "INSERT INTO " + 
+									"Student(studentID, titleID, forname, familyName, dateOfBirth, sex) " + 
+									"VALUES(" + 
+										(i+1) +
+										"'" + randomNumberBetween(1, numTitles) + "', " +
+										"'" + "forname" + (i+1) + "', " +
+										"'" + "familyName" + (i+1) + "', " +
+										"'" + randomDateOfBirth() + "', " +
+										"'" + randomSex() + "'" +
+								");";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+
+					dbConn.commit();
+
+				} catch (SQLException e) {
+					System.out.println("Error inserting : Student " + i);
+					e.printStackTrace();
+					try {
+						dbConn.rollback();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+			
+			System.out.println("Test data inserted: Students");
+
+		} finally {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				System.out
+						.println("Could not close PreparedStatement connection");
+				e.printStackTrace();
+			}
+		}		
+	}
+	private void addTestData_Session() {
+
+		PreparedStatement stmt = null;
+
+		try {
+				try {
+					String sql = "INSERT INTO " + 
+									"Session(sessionID, sessionString) " + 
+									"VALUES(" + 
+										"'1'" +
+										"'May/Aug'" +
+								");";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+					dbConn.commit();
+
+					sql = "INSERT INTO " + 
+									"Session(sessionString) " + 
+									"VALUES(" + 
+										"'2'" +
+										"'Jan/Feb'" +
+								");";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+					dbConn.commit();
+					
+
+				} catch (SQLException e) {
+					System.out.println("Error inserting : Sessions");
+					e.printStackTrace();
+					try {
+						dbConn.rollback();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+				
+			System.out.println("Test data inserted: Sessions");
+
+		} finally {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				System.out
+						.println("Could not close PreparedStatement connection");
+				e.printStackTrace();
+			}
+		}		
+	}
+	private void addTestData_Type(int numType){
+		PreparedStatement stmt = null;
+
+		try {
+				try {
+					String sql = "INSERT INTO " + 
+									"Type(typeID, typeString) " + 
+									"VALUES(" + 
+										"'1'" +
+										"'normal'" +
+								");";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+					dbConn.commit();
+
+					sql = "INSERT INTO " + 
+							"Type(typeID, typeString) " + 
+							"'2'" +
+							"VALUES(" + 
+								"'resit'" +
+						");";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+					dbConn.commit();
+					
+					sql = "INSERT INTO " + 
+							"Type(typeID, typeString) " +
+							"'3'" +
+							"VALUES(" + 
+								"'repeat'" +
+						");";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+					dbConn.commit();
+
+				} catch (SQLException e) {
+					System.out.println("Error inserting : Type");
+					e.printStackTrace();
+					try {
+						dbConn.rollback();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+				
+			System.out.println("Test data inserted: Type");
+
+		} finally {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				System.out
+						.println("Could not close PreparedStatement connection");
+				e.printStackTrace();
+			}
+		}		
+	}
+	private void addTestData_NextOfKin(int numStudents, int numNextOfKin){
+		PreparedStatement stmt = null;
+
+		try {
+			int[] usedStudentIDs = new int[numNextOfKin];
+			for(int i = 0; i < numNextOfKin; i++){
+				usedStudentIDs[i] = getUniqueRandomNumberBetween(1, numStudents, usedStudentIDs);
+				
+				try {
+					String sql = "INSERT INTO " + 
+									"NextOfKin(studentID,eMailAddress,postalAddress) " + 
+									"VALUES(" + 
+										"'" + usedStudentIDs[i] + "', " +
+										"'" + "emailAddress" + (i+1) +"@testing.com', " +
+										"'" + "PostalAddress" + (i+1) + "'" +
+									");";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+					dbConn.commit();
+
+
+				} catch (SQLException e) {
+					System.out.println("Error inserting : NextOfKin" + i);
+					usedStudentIDs[i] = (Integer) null;
+					try {
+						dbConn.rollback();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+					e.printStackTrace();
+				}
+			}
+				
+			System.out.println("Test data inserted: NextOfKin");
+
+		} finally {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				System.out
+						.println("Could not close PreparedStatement connection");
+				e.printStackTrace();
+			}
+		}	
+	}
+	private void addTestData_Lecturer(int numLecturer, int numTitles){
+		PreparedStatement stmt = null;
+
+		try {
+			for(int i = 0; i < numLecturer; i++){
+				
+				try {
+					String sql = "INSERT INTO " + 
+									"Lecturer(lecturerID, titleID,forname,familyName) " + 
+									"VALUES(" + 
+										"'" + (i+1) + "'" + 
+										"'" + randomNumberBetween(1, numTitles) + "', " +
+										"'" + "forNameLecturer" + (i+1) + "', " +
+										"'" + "familyNameLecturer" + (i+1) + "'" +
+									");";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+					dbConn.commit();
+
+
+				} catch (SQLException e) {
+					System.out.println("Error inserting : Lecturer");
+					e.printStackTrace();
+					try {
+						dbConn.rollback();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+				
+			System.out.println("Test data inserted: Lecturer");
+
+		} finally {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				System.out
+						.println("Could not close PreparedStatement connection");
+				e.printStackTrace();
+			}
+		}	
+	}
+	private void addTestData_Course(int numCourse, int numLecturer){
+		PreparedStatement stmt = null;
+
+		try {
+			for(int i = 0; i < numCourse; i++){
+				
+				try {
+					String sql = "INSERT INTO " + 
+									"Course(courseID, courseName, courseDescription, lecturerID) " + 
+									"VALUES(" + 
+										"'" + (i+1) + "'" +
+										"'" + "courseName" + (i+1) + "', " +
+										"'" + "courseDescription" + (i+1) + "', " +
+										"'" + randomNumberBetween(1, numLecturer) + "'" +
+									");";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+					dbConn.commit();
+
+
+				} catch (SQLException e) {
+					System.out.println("Error inserting : Course");
+					e.printStackTrace();
+					try {
+						dbConn.rollback();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+				
+			System.out.println("Test data inserted: Course");
+
+		} finally {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				System.out
+						.println("Could not close PreparedStatement connection");
+				e.printStackTrace();
+			}
+		}	
+	}
+
+	private void addTestData_StudentContact(int numStudents){
+		PreparedStatement stmt = null;
+
+		try {
+			for(int i = 0; i < numStudents; i++){
+				
+				try {
+					String sql = "INSERT INTO " + 
+									"StudentContact(studentID, eMailAddress, postalAddress) " + 
+									"VALUES(" + 
+										"'" + (i+1) + "', " +
+										"'" + "eMailAddress" + (i+1) + "@test.com', " +
+										"'" + "postalAddress" + (i+1) + "'" +
+									");";
+					stmt = dbConn.prepareStatement(sql);
+					stmt.executeUpdate();
+					dbConn.commit();
+
+
+				} catch (SQLException e) {
+					System.out.println("Error inserting : StudentContact");
+					e.printStackTrace();
+					try {
+						dbConn.rollback();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+				
+			System.out.println("Test data inserted: StudentContact");
+
+		} finally {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				System.out
+						.println("Could not close PreparedStatement connection");
+				e.printStackTrace();
+			}
+		}	
+	}
+	
+	
+	
+	
+	private int getUniqueRandomNumberBetween(int min, int max, int[] listOfUsedIDs){
+		int r = randomNumberBetween(min, max);
+		for(int i = 0; i < listOfUsedIDs.length; i++){
+			if(listOfUsedIDs[i] == r){
+				r = getUniqueRandomNumberBetween(min, max, listOfUsedIDs);
+			}
+		}
+		return r;
+	}
+	private String randomSex(){
+		int i = randomNumberBetween(0,1);
+		if(i == 0){
+			return "m";
+		}else
+			return "f";
+	}
+	private String randomDateOfBirth(){
+
+		int year = randomNumberBetween(1950, 2010);
+		int month = randomNumberBetween(1, 12);
+		int day = randomNumberBetween(1, 28);
+		
+		return day + "-" + month + "-" + year;
+
+	}
+	private int randomNumberBetween(int min, int max){
+        return min + (int)Math.round(Math.random() * (max - min));
+
+	}
+}

@@ -1,0 +1,16 @@
+package main;
+
+public class Main {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		
+		Database db = new Database();
+		db.createTables();
+		db.removeTables();
+		db.disconnectFromDatabase();
+	}
+
+}

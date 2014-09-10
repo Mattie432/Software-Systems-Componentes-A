@@ -1,0 +1,117 @@
+package simpleLogin;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Properties;
+
+import javax.mail.MessagingException;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+
+@SuppressWarnings("serial")
+@WebServlet(value = "/SendMessage")
+public class SendMessage extends HttpServlet {
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public SendMessage() {
+		super();
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest
+	 * , javax.servlet.http.HttpServletResponse)
+	 */
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		response.setContentType("text/html");
+		PrintWriter out = response.getWriter();
+
+		String name = request.getParameter("username");
+		String password = request.getParameter("password");
+		String msg = request.getParameter("message");
+		String to = request.getParameter("to");
+		String subject = request.getParameter("subject");
+		
+		out.println(name + password + msg + to + subject);
+		
+	}
+
+	
+	/**
+	 * Connects to the mail server after asking the user to input a password.
+	 */
+	public void initializeConnection(String username, String password) {
+
+		Properties props;
+		Store store = null;
+		Session session;
+		
+		// Step 1: Set all Properties
+		props = System.getProperties();
+		props.setProperty("mail.store.protocol", "imaps");
+
+		props.put("mail.smtp.auth", true);
+		props.put("mail.smtp.starttls.enable", true);
+		props.put("mail.smtp.host", "smtp.gmail.com");
+		props.put("mail.smtp.port", "587");
+
+		JPasswordField pwd = new JPasswordField(10);
+		int action = JOptionPane.showConfirmDialog(null, pwd, "Enter Password",
+				JOptionPane.OK_CANCEL_OPTION);
+		if (action < 0) {
+			JOptionPane.showMessageDialog(null,
+					"Cancel, X or escape key selected");
+			// System.exit(0);
+		} else {
+			password = new String(pwd.getPassword());
+		}
+
+		// Set Property with username and password for authentication
+		props.setProperty("mail.user", username);
+		props.setProperty("mail.password", password);
+
+		// Step 2: Establish a mail session (java.mail.Session)
+		session = Session.getDefaultInstance(props);
+
+		try {
+			// We need to get Store from mail session
+			// A store needs to connect to the IMAP server
+			store = session.getStore("imaps");
+			store.connect("imap.googlemail.com", username, password);
+
+		} catch (NoSuchProviderException e) {
+			System.out.println("An error occoured establishing a connection!");
+			System.out.println(e.getMessage());
+		} catch (MessagingException e) {
+			System.out.println("An error occoured establishing a connection!");
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doPost(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+	}
+}

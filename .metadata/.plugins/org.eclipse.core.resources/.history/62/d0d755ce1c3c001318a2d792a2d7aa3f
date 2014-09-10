@@ -1,0 +1,174 @@
+package main;
+
+import javax.swing.JFrame;
+import java.awt.Window.Type;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import java.awt.Font;
+import javax.swing.JComboBox;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.JButton;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+
+public class UserInterface_AddMarks {
+
+	private JFrame frmAddStudentMarks;
+	private Database db;
+	private JTextField textField;
+	private JTextField textField_1;
+
+//	/**
+//	 * Launch the application.
+//	 */
+//	public static void main(String[] args) {
+//		EventQueue.invokeLater(new Runnable() {
+//			public void run() {
+//				try {
+//					UserInterface_AddMarks window = new UserInterface_AddMarks();
+//					window.frame.setVisible(true);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		});
+//	}
+
+	/**
+	 * Create the application.
+	 * @param db 
+	 */
+	public UserInterface_AddMarks(Database database) {
+		db = database;
+		initialize();
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frmAddStudentMarks = new JFrame();
+		frmAddStudentMarks.setTitle("Add student marks");
+		frmAddStudentMarks.setType(Type.UTILITY);
+		frmAddStudentMarks.setBounds(100, 100, 543, 300);
+		frmAddStudentMarks.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frmAddStudentMarks.getContentPane().setLayout(null);
+		
+		JLabel lblStudentId = new JLabel("Student ID");
+		lblStudentId.setBounds(10, 11, 76, 14);
+		frmAddStudentMarks.getContentPane().add(lblStudentId);
+		
+		textField = new JTextField();
+		textField.setBounds(98, 8, 86, 20);
+		frmAddStudentMarks.getContentPane().add(textField);
+		textField.setColumns(10);
+		
+		JLabel lblOr = new JLabel("OR");
+		lblOr.setFont(new Font("Tahoma", Font.BOLD, 16));
+		lblOr.setBounds(194, 11, 46, 14);
+		frmAddStudentMarks.getContentPane().add(lblOr);
+		
+		JLabel lblFamilyName = new JLabel("Family name");
+		lblFamilyName.setBounds(233, 11, 69, 14);
+		frmAddStudentMarks.getContentPane().add(lblFamilyName);
+		
+		final JComboBox<String> comboBox = new JComboBox<String>();
+		comboBox.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent arg0) {
+				getStudentID(textField_1.getText(), comboBox.getItemAt(comboBox.getSelectedIndex()), textField);
+			}
+		});
+		comboBox.setBounds(297, 36, 112, 20);
+		frmAddStudentMarks.getContentPane().add(comboBox);
+		
+		textField_1 = new JTextField();
+		textField_1.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+			}
+		});
+		textField_1.setBounds(297, 8, 112, 20);
+		frmAddStudentMarks.getContentPane().add(textField_1);
+		textField_1.setColumns(10);
+		
+		
+		JLabel lblForname = new JLabel("Forname");
+		lblForname.setBounds(233, 39, 69, 14);
+		frmAddStudentMarks.getContentPane().add(lblForname);
+		
+		JButton btnSearch = new JButton("Search");
+		btnSearch.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				getFornameFromLastname(textField_1.getText(), comboBox);
+			}
+		});
+		btnSearch.setBounds(431, 7, 86, 23);
+		frmAddStudentMarks.getContentPane().add(btnSearch);
+		
+		JLabel lblCourse = new JLabel("Course");
+		lblCourse.setBounds(10, 86, 46, 14);
+		frmAddStudentMarks.getContentPane().add(lblCourse);
+		
+		JComboBox<String> comboBox_1 = new JComboBox<String>();
+		comboBox_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				getClassesForStudent(textField.getText());
+			}
+		});
+		comboBox_1.setBounds(98, 83, 86, 20);
+		frmAddStudentMarks.getContentPane().add(comboBox_1);
+	}
+
+	public void setVisible() {
+		frmAddStudentMarks.setVisible(true);
+		
+	}
+	
+	public void getStudentID(String lastName, String firstName, JTextField idTextBox){
+		try {
+			System.out.println("Searching for " + firstName + " " + lastName +"'s Student ID");
+			String sql = "SELECT studentID FROM Student WHERE familyName='" + lastName + "' AND forname = '" + firstName + "';";
+			ResultSet r = db.queryDatabaseStart(sql);
+			
+			while(r.next()){
+				idTextBox.setText(r.getString(1));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			db.queryDatabaseStop();
+			System.out.println("Search complete.");
+			System.out.println();
+		}
+	}
+	
+	public void getFornameFromLastname(String lastName, JComboBox<String> fornameComb){
+		try {
+			System.out.println("Searching for " + lastName);
+			String sql = "SELECT forname FROM Student WHERE familyName='" + lastName + "';";
+			ResultSet r = db.queryDatabaseStart(sql);
+			fornameComb.removeAll();
+			while(r.next()){
+				fornameComb.addItem(r.getString(1));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			db.queryDatabaseStop();
+			System.out.println("Search complete.");
+			System.out.println();
+		}
+		
+	}
+
+	public void getClassesForStudent(String studentID){
+		
+	}
+}

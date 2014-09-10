@@ -1,0 +1,22 @@
+package main;
+
+public class Main {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		
+		Database db = new Database();
+//		db.removeTables();
+//		db.createTables();
+//		db.addTestData();
+//		db.removeTables();
+		
+		UserInterface_Main mainUI = null;
+		mainUI.main(null);
+		
+		//db.disconnectFromDatabase();
+	}
+
+}

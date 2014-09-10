@@ -1,0 +1,113 @@
+package simpleLogin;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Properties;
+
+import javax.mail.MessagingException;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.internet.MimeMessage;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+
+@SuppressWarnings("serial")
+@WebServlet(value = "/SendMessage")
+public class SendMessage extends HttpServlet {
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public SendMessage() {
+		super();
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest
+	 * , javax.servlet.http.HttpServletResponse)
+	 */
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		response.setContentType("text/html");
+		PrintWriter out = response.getWriter();
+
+		String name = request.getParameter("username");
+		String password = request.getParameter("password");
+		String msg = request.getParameter("message");
+		String to = request.getParameter("to");
+		String subject = request.getParameter("subject");
+		
+		out.println(name + password + msg + to + subject);
+		
+		 response.setContentType(CONTENT_TYPE);  
+	        PrintWriter out = response.getWriter();  
+	        boolean debug = true;  
+	  
+	        String host = "smtp.gmail.com";
+	        
+	        Properties props = new Properties();  
+	        props.put("mail.smtps.auth", "true");  
+	        Session session = Session.getDefaultInstance(props);  
+	        session.setDebug(debug);  
+	  
+	        MimeMessage msg = new MimeMessage(session);  
+	        // set the message content here  
+	        try  
+	        {  
+	            Logger.getLogger(this.getClass())  
+	                    .warn("Before grabbing Transport.");  
+	            Transport transport = session.getTransport("smtps");  
+	            try  
+	            {  
+	                msg.setContent(content, "text/plain");  
+	                transport.connect(host, username, password);  
+	                Logger.getLogger(this.getClass()).warn(  
+	                        "Before send message invocation.");  
+	                msg.setSubject(subject);  
+	                msg.setRecipients(Message.RecipientType.TO, "myemail@gmail.com");  
+	                transport.sendMessage(msg, msg.getAllRecipients());  
+	                Logger.getLogger(this.getClass()).warn(  
+	                        "Message sent");  
+	                out.println("Message Sent");  
+	                  
+	            }  
+	            catch (Throwable t)  
+	            {  
+	                System.out.println("Unable to send message.");  
+	                t.printStackTrace();  
+	            }  
+	        }  
+	        catch (NoSuchProviderException e)  
+	        {  
+	            e.printStackTrace();  
+	        }  
+		
+		
+	}
+
+		
+	}
+	
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doPost(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+	}
+}

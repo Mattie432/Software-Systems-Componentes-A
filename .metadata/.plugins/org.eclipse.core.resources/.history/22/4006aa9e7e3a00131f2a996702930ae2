@@ -1,0 +1,49 @@
+package main;
+
+import java.io.FileInputStream;
+import java.sql.*;
+import java.util.Properties;
+
+import javax.sql.*;
+
+public class main {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		
+
+	}
+
+	
+	public void createDatabase(){
+		
+		String dbName = “jdbc:postgresql://dbteach2/<name>”;
+		
+	     
+		try {
+			Class.forName("org.postgresql.Driver");
+		} catch (ClassNotFoundException ex) {
+			System.out.println("Driver not found");
+			}
+			
+		System.out.println("PostgreSQL driver registered.");
+			
+		Connection conn = null;
+			
+		try {
+			conn = DriverManager.getConnection(url, "mxf203", "ilovecookies10");
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		}
+			
+		if (conn != null) {
+			System.out.println("Database accessed!");
+		} else {
+			System.out.println("Failed to make connection");
+		}
+
+	}
+	
+}

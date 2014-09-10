@@ -1,0 +1,177 @@
+package main;
+
+import java.awt.EventQueue;
+import java.awt.List;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+public class UserInterface_AddStudent {
+
+	private JFrame frmAddNewStudent;
+	private JTextField textField;
+	private Database db;
+	private JTextField textField_1;
+	private JTextField textField_2;
+	private JTextField textField_3;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					UserInterface_AddStudent window = new UserInterface_AddStudent(null);
+					window.frmAddNewStudent.setVisible(true);
+								
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	public void setVisible(){
+		this.frmAddNewStudent.setVisible(true);
+	}
+	
+	/**
+	 * Create the application.
+	 */
+	public UserInterface_AddStudent(Database database) {
+		db = database;
+		initialize();
+		
+	}
+	
+	private void fillTitleCombo(JComboBox<String> comb){
+		
+		try {
+			String sql = "SELECT titleString FROM Titles";
+			ResultSet r = db.queryDatabaseStart(sql);
+			
+			while(r.next()){
+				comb.addItem(r.getString(1));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			db.queryDatabaseStop();
+		}
+		
+		
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frmAddNewStudent = new JFrame();
+		frmAddNewStudent.setResizable(false);
+		frmAddNewStudent.setTitle("Add new student");
+		frmAddNewStudent.setBounds(100, 100, 336, 269);
+		frmAddNewStudent.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmAddNewStudent.getContentPane().setLayout(null);
+		
+		JLabel lblStudentId = new JLabel("Student ID");
+		lblStudentId.setBounds(20, 14, 69, 14);
+		frmAddNewStudent.getContentPane().add(lblStudentId);
+		
+		textField = new JTextField();
+		textField.setBounds(91, 11, 86, 20);
+		frmAddNewStudent.getContentPane().add(textField);
+		textField.setColumns(10);
+		
+		JLabel lblTitle = new JLabel("Title");
+		lblTitle.setBounds(20, 42, 46, 14);
+		frmAddNewStudent.getContentPane().add(lblTitle);
+		
+		final JComboBox<String> comboBox = new JComboBox<String>();
+		comboBox.setBounds(91, 39, 86, 20);
+		frmAddNewStudent.getContentPane().add(comboBox);
+		fillTitleCombo(comboBox);
+		
+		JLabel lblLeaveBlankTo = new JLabel("Leave blank to autoset.");
+		lblLeaveBlankTo.setBounds(185, 14, 131, 14);
+		frmAddNewStudent.getContentPane().add(lblLeaveBlankTo);
+		
+		JLabel lblForname = new JLabel("Forname");
+		lblForname.setBounds(20, 73, 46, 14);
+		frmAddNewStudent.getContentPane().add(lblForname);
+		
+		textField_1 = new JTextField();
+		textField_1.setBounds(91, 70, 86, 20);
+		frmAddNewStudent.getContentPane().add(textField_1);
+		textField_1.setColumns(10);
+		
+		JLabel lblFamilyName = new JLabel("Family Name");
+		lblFamilyName.setBounds(20, 104, 69, 14);
+		frmAddNewStudent.getContentPane().add(lblFamilyName);
+		
+		textField_2 = new JTextField();
+		textField_2.setBounds(91, 101, 86, 20);
+		frmAddNewStudent.getContentPane().add(textField_2);
+		textField_2.setColumns(10);
+		
+		JLabel lblDateOfBirth = new JLabel("Date of Birth");
+		lblDateOfBirth.setBounds(20, 135, 69, 14);
+		frmAddNewStudent.getContentPane().add(lblDateOfBirth);
+		
+		textField_3 = new JTextField();
+		textField_3.setBounds(91, 132, 86, 20);
+		frmAddNewStudent.getContentPane().add(textField_3);
+		textField_3.setColumns(10);
+		
+		JLabel lblDdmmyyy = new JLabel("dd-mm-yyy");
+		lblDdmmyyy.setBounds(189, 135, 86, 14);
+		frmAddNewStudent.getContentPane().add(lblDdmmyyy);
+		
+		JLabel lblSex = new JLabel("Sex");
+		lblSex.setBounds(20, 160, 46, 14);
+		frmAddNewStudent.getContentPane().add(lblSex);
+		
+		final JComboBox<String> comboBox_1 = new JComboBox<String>();
+		comboBox_1.setModel(new DefaultComboBoxModel<String>(new String[] {"M", "F"}));
+		comboBox_1.setMaximumRowCount(2);
+		comboBox_1.setBounds(91, 160, 86, 20);
+		frmAddNewStudent.getContentPane().add(comboBox_1);
+		
+		JButton btnSave = new JButton("Save");
+		btnSave.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				//save btn clicked
+				addNewStudent(textField.getText(),comboBox.getItemAt(comboBox.getSelectedIndex()),textField_1.getText(),textField_2.getText(),textField_3.getText(),comboBox_1.getItemAt(comboBox_1.getSelectedIndex()));
+			}
+		});
+		btnSave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			}
+		});
+		btnSave.setBounds(221, 197, 89, 23);
+		frmAddNewStudent.getContentPane().add(btnSave);
+	}
+	
+	private void addNewStudent(String studentID, String title,String forname, String familyName, String dateOfBBirth, String sex){
+		ArrayList<String> values = new ArrayList<String>();
+		String sql = "INSERT INTO Students (" +
+				if(studentID != ""){
+					values.add(studentID);
+					"studentID, " +
+				}
+						"";
+		
+	}
+}
