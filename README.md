@@ -7,7 +7,7 @@ Solutions to exercises posed as part of the software system components course du
 
 Createa a database interaction program using postgresql.
 
-Requirements include
+Requirements include:
 ```
 Constraints indicated: primary key, foreign keys, non-null constraints, etc.
 Database and tables are created correctly - appropriate constraints.
